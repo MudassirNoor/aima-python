@@ -17,8 +17,9 @@ def manhattan_heuristic(self, node):
     manhattanDistance = 0
 
     for i in range(len(self.goal)):
-        goalPosition = self.goal.index(node.state[i])
-        manhattanDistance += calculate_manhattanDistance(i, goalPosition)
+        if (node.state[i] != 0):
+            goalPosition = self.goal.index(node.state[i])
+            manhattanDistance += calculate_manhattanDistance(i, goalPosition)
 
     return manhattanDistance
 
@@ -34,7 +35,7 @@ def make_rand_8puzzle():
     solvable = False
     while (not solvable):
         eightPuzzleList = []
-        for i in range (0, 9):
+        for i in range (9):
             eightPuzzleList.append(i)
 
         random.shuffle(eightPuzzleList)
@@ -52,9 +53,11 @@ def main():
 
     # eightPuzzle = make_rand_8puzzle()
     eightPuzzle = EightPuzzle((7,2,4,5,0,6,8,3,1), (0,1,2,3,4,5,6,7,8))
-
+    # node = Node(eightPuzzle.initial)
     print("Initial State")
     display(eightPuzzle.initial)
+    # v = eightPuzzle.manhattan_heuristic(node)
+    # print(v)
 
     startTime = time.time()
     solved1, nodesRemoved1 = astar_search(eightPuzzle)
@@ -74,6 +77,7 @@ def astar_search(problem, h=None, display=False):
     """A* search is best-first graph search with f(n) = g(n)+h(n).
     You need to specify the h function when you call astar_search, or
     else in your Problem subclass."""
+    h = max(h, problem.h)
     h = memoize(h or problem.h, 'h')
     return best_first_graph_search(problem, lambda n: n.path_cost + h(n), display)
 
@@ -94,7 +98,6 @@ def best_first_graph_search(problem, f, display=False):
     numNodesRemoved = 0
     while frontier:
         node = frontier.pop()
-        numNodesRemoved += 1
         numNodesRemoved += 1
         if problem.goal_test(node.state):
             if display:
