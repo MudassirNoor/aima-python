@@ -3,6 +3,20 @@ from search import *
 import random
 import time
 
+def printResult(node, nodesRemoved, elapsedTime):
+    print("Final State")
+    display(node.state)
+    print("Nodes removed: ", nodesRemoved)
+    print("Length of solution: ", len(node.solution()))
+    print("Time elapsed: ", elapsedTime)
+
+def maximum_heuristic(self, node):
+    self : EightPuzzle
+    misplacedTileHeuristic = self.h(node)
+    manhattanHeuristic = self.manhattan_heuristic(node)
+
+    return max(misplacedTileHeuristic, manhattanHeuristic)
+
 def calculate_manhattanDistance(nodeIndex, goalIndex):
     xInitial = nodeIndex % 3
     yInitial = int(nodeIndex / 3)
@@ -35,7 +49,7 @@ def make_rand_8puzzle():
     solvable = False
     while (not solvable):
         eightPuzzleList = []
-        for i in range (9):
+        for i in range(9):
             eightPuzzleList.append(i)
 
         random.shuffle(eightPuzzleList)
@@ -49,38 +63,36 @@ def make_rand_8puzzle():
         del eightPuzzleTuple, eightPuzzleList, eightPuzzle
 
 def main():
+    # Monkey Patching
+    # Well aware it is not a good practice, but within the current scope it is fine to use
     EightPuzzle.manhattan_heuristic = manhattan_heuristic
+    EightPuzzle.maximum_heuristic = maximum_heuristic
 
-    # eightPuzzle = make_rand_8puzzle()
-    eightPuzzle = EightPuzzle((7,2,4,5,0,6,8,3,1), (0,1,2,3,4,5,6,7,8))
-    # node = Node(eightPuzzle.initial)
+    eightPuzzle = make_rand_8puzzle()
+    # eightPuzzle = EightPuzzle((7,2,4,5,0,6,8,3,1), (0,1,2,3,4,5,6,7,8))
     print("Initial State")
     display(eightPuzzle.initial)
-    # v = eightPuzzle.manhattan_heuristic(node)
-    # print(v)
 
     startTime = time.time()
     solved1, nodesRemoved1 = astar_search(eightPuzzle)
-    endTime = time.time()
-    print(nodesRemoved1)
-    print(endTime - startTime)
+    printResult(solved1, nodesRemoved1, time.time() - startTime)
+
     startTime = time.time()
-    solved2, nodesRemoved2= astar_search(eightPuzzle, eightPuzzle.manhattan_heuristic)
-    endTime = time.time()
-    print(endTime - startTime)
-    print(nodesRemoved2)
+    solved2, nodesRemoved2 = astar_search(eightPuzzle, eightPuzzle.manhattan_heuristic)
+    printResult(solved2, nodesRemoved2, time.time() - startTime)
 
-    display(solved2.state)
-
+    startTime = time.time()
+    solved3, nodesRemoved3 = astar_search(eightPuzzle, eightPuzzle.maximum_heuristic)
+    printResult(solved3, nodesRemoved3, time.time() - startTime)
 
 def astar_search(problem, h=None, display=False):
     """A* search is best-first graph search with f(n) = g(n)+h(n).
     You need to specify the h function when you call astar_search, or
     else in your Problem subclass."""
-    h = max(h, problem.h)
     h = memoize(h or problem.h, 'h')
     return best_first_graph_search(problem, lambda n: n.path_cost + h(n), display)
 
+# Modified the following code to return an additional value
 def best_first_graph_search(problem, f, display=False):
     """Search the nodes with the lowest f scores first.
     You specify the function f(node) that you want to minimize; for example,
@@ -94,7 +106,6 @@ def best_first_graph_search(problem, f, display=False):
     frontier = PriorityQueue('min', f)
     frontier.append(node)
     explored = set()
-    numTilesMoved = 0
     numNodesRemoved = 0
     while frontier:
         node = frontier.pop()
