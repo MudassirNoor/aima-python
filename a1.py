@@ -31,6 +31,100 @@ def make_rand_8puzzle():
 
         del eightPuzzleTuple, eightPuzzleList, eightPuzzle
 
+class YPuzzle(Problem):
+    def __init__(self, initial, goal =(9,1,9,9,2,3,4,5,6,7,8,0)):
+        """For initializing this puzzle, ensure that indexes 0, 2 and 3 are instantiated with 9"""
+
+        super().__init__(initial, goal)
+
+    def display(self, state):
+        zerothPosition = state.index(0)
+        listRepresentation = list(state)
+        listRepresentation[zerothPosition] = '*'
+        for i in range(12):
+            if i != 0 and i % 4 == 0:
+                print()
+            if listRepresentation[i] == 9:
+                print(" ", end = '')
+            else:
+                print(str(listRepresentation[i]) + ' ', end = '')
+
+        print()
+
+    def actions(self, state):
+        possible_actions = ['UP', 'DOWN', 'LEFT', 'RIGHT']
+
+        index_blank_square = self.find_blank_square(state)
+        row = int(index_blank_square / 4)
+        column = index_blank_square % 4
+
+        if column == 0:
+            possible_actions.remove('LEFT')
+        if row == 0:
+            possible_actions.remove('UP')
+        if column == 3:
+            possible_actions.remove('RIGHT')
+        if row == 2:
+            possible_actions.remove('DOWN')
+
+        return possible_actions
+
+    # Slight modification made to the code in EightPuzzle class
+    def result(self, state, action):
+        blank = self.find_blank_square(state)
+        new_state = list(state)
+
+        delta = {'UP': -4, 'DOWN': 4, 'LEFT': -1, 'RIGHT': 1}
+        neighbor = blank + delta[action]
+        new_state[blank], new_state[neighbor] = new_state[neighbor], new_state[blank]
+
+        return tuple(new_state)
+
+    def find_blank_square(self, state):
+        return state.index(0)
+
+    #TODO: def check_solvability(self, state):
+
+    def h(self, node):
+        """Misplaced tile heuristic"""
+        misplacedTiles = 0
+        for i in range(len(node.state)):
+            if (node.state[i] != 9 and node.state[i] != 0):
+                if (node.state[i] != self.goal[i]):
+                    misplacedTiles += 1
+
+        return misplacedTiles
+
+    def manhattan_heuristic(self, node):
+        manhattanDistance = 0
+        for i in range(len(self.goal)):
+            if (node.state[i] != 0 and node.state[i] != 9):
+                goalPosition = self.goal.index(node.state[i])
+                manhattanDistance += self.calculate_manhattanDistance(i, goalPosition)
+
+        return manhattanDistance
+
+    def maximum_heuristic(self, node):
+        misplacedTileHeuristic = self.h(node)
+        manhattanHeuristic = self.manhattan_heuristic(node)
+
+        return max(misplacedTileHeuristic, manhattanHeuristic)
+
+    def calculate_manhattanDistance(self, nodeIndex, goalIndex):
+        xInitial = nodeIndex % 4
+        yInitial = int(nodeIndex / 4)
+
+        xFinal = goalIndex % 4
+        yFinal = int(goalIndex / 4)
+
+        return abs(xFinal - xInitial) + abs(yFinal - yInitial)
+
+"""These helper functions are specific to the Eight Puzzle problems
+    - print_result
+    - maximum_heuristic
+    - manhattan_heuristic
+    - calculate_manhattanDistance"""
+
 def print_result(node, nodesRemoved, elapsedTime):
     print("Final State")
     display(node.state)
@@ -50,7 +144,7 @@ def manhattan_heuristic(self, node):
     manhattanDistance = 0
 
     for i in range(len(self.goal)):
-        if (node.state[i] != 0):
+        if node.state[i] != 0:
             goalPosition = self.goal.index(node.state[i])
             manhattanDistance += calculate_manhattanDistance(i, goalPosition)
 
@@ -71,6 +165,36 @@ def main():
 
 
 def run_HousePuzzle():
+    # ypuzzle = YPuzzle((9,1,9,9,2,0,4,5,6,3,7,8))
+    # ypuzzle = YPuzzle((9,0,9,9,2,1,8,4,6,3,7,5))
+    ypuzzle = YPuzzle(())
+    print("Initial State")
+    ypuzzle.display(ypuzzle.initial)
+
+    startTime = time.time()
+    solved1, nodesRemoved1 = astar_search(ypuzzle)
+    elapsedTime = time.time() - startTime
+    ypuzzle.display(solved1.state)
+    print("Nodes removed: ", nodesRemoved1)
+    print("Length of solution: ", len(solved1.solution()))
+    print("Time elapsed: ", elapsedTime)
+
+    # startTime = time.time()
+    # solved2, nodesRemoved2 = astar_search(ypuzzle, ypuzzle.manhattan_heuristic)
+    # elapsedTime = time.time() - startTime
+    # ypuzzle.display(solved2.state)
+    # print("Nodes removed: ", nodesRemoved2)
+    # print("Length of solution: ", len(solved2.solution()))
+    # print("Time elapsed: ", elapsedTime)
+    #
+    # startTime = time.time()
+    # solved3, nodesRemoved3 = astar_search(ypuzzle, ypuzzle.maximum_heuristic)
+    # elapsedTime = time.time() - startTime
+    # ypuzzle.display(solved3.state)
+    # print("Nodes removed: ", nodesRemoved3)
+    # print("Length of solution: ", len(solved3.solution()))
+    # print("Time elapsed: ", elapsedTime)
+
     return 0
 
 def run_EightPuzzle():
