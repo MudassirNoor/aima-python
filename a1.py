@@ -3,47 +3,16 @@ from search import *
 import random
 import time
 
-def printResult(node, nodesRemoved, elapsedTime):
-    print("Final State")
-    display(node.state)
-    print("Nodes removed: ", nodesRemoved)
-    print("Length of solution: ", len(node.solution()))
-    print("Time elapsed: ", elapsedTime)
-
-def maximum_heuristic(self, node):
-    self : EightPuzzle
-    misplacedTileHeuristic = self.h(node)
-    manhattanHeuristic = self.manhattan_heuristic(node)
-
-    return max(misplacedTileHeuristic, manhattanHeuristic)
-
-def calculate_manhattanDistance(nodeIndex, goalIndex):
-    xInitial = nodeIndex % 3
-    yInitial = int(nodeIndex / 3)
-
-    xFinal  = goalIndex % 3
-    yFinal = int(goalIndex / 3)
-
-    return abs(xFinal - xInitial) + abs (yFinal - yInitial)
-
-def manhattan_heuristic(self, node):
-    self : EightPuzzle
-    manhattanDistance = 0
-
-    for i in range(len(self.goal)):
-        if (node.state[i] != 0):
-            goalPosition = self.goal.index(node.state[i])
-            manhattanDistance += calculate_manhattanDistance(i, goalPosition)
-
-    return manhattanDistance
-
 def display(state):
     zerothPosition = state.index(0)
     listRepresentation = list(state)
     listRepresentation[zerothPosition] = '*'
-    for i in range(0, 9, 3):
-        x, y, z = i, i + 1, i + 2
-        print(listRepresentation[x], listRepresentation[y], listRepresentation[z])
+    for i in range(9):
+        if i != 0 and i % 3 == 0:
+            print()
+        print(str(listRepresentation[i]) + " " , end = '')
+
+    print()
 
 def make_rand_8puzzle():
     solvable = False
@@ -62,28 +31,69 @@ def make_rand_8puzzle():
 
         del eightPuzzleTuple, eightPuzzleList, eightPuzzle
 
+def print_result(node, nodesRemoved, elapsedTime):
+    print("Final State")
+    display(node.state)
+    print("Nodes removed: ", nodesRemoved)
+    print("Length of solution: ", len(node.solution()))
+    print("Time elapsed: ", elapsedTime)
+
+def maximum_heuristic(self, node):
+    self : EightPuzzle
+    misplacedTileHeuristic = self.h(node)
+    manhattanHeuristic = self.manhattan_heuristic(node)
+
+    return max(misplacedTileHeuristic, manhattanHeuristic)
+
+def manhattan_heuristic(self, node):
+    self : EightPuzzle
+    manhattanDistance = 0
+
+    for i in range(len(self.goal)):
+        if (node.state[i] != 0):
+            goalPosition = self.goal.index(node.state[i])
+            manhattanDistance += calculate_manhattanDistance(i, goalPosition)
+
+    return manhattanDistance
+
+def calculate_manhattanDistance(nodeIndex, goalIndex):
+    xInitial = nodeIndex % 3
+    yInitial = int(nodeIndex / 3)
+
+    xFinal  = goalIndex % 3
+    yFinal = int(goalIndex / 3)
+
+    return abs(xFinal - xInitial) + abs (yFinal - yInitial)
+
 def main():
+    run_EightPuzzle()
+    # run_HousePuzzle()
+
+
+def run_HousePuzzle():
+    return 0
+
+def run_EightPuzzle():
     # Monkey Patching
     # Well aware it is not a good practice, but within the current scope it is fine to use
     EightPuzzle.manhattan_heuristic = manhattan_heuristic
     EightPuzzle.maximum_heuristic = maximum_heuristic
 
-    eightPuzzle = make_rand_8puzzle()
-    # eightPuzzle = EightPuzzle((7,2,4,5,0,6,8,3,1), (0,1,2,3,4,5,6,7,8))
+    eightPuzzle = EightPuzzle((7,2,4,5,0,6,8,3,1), (0,1,2,3,4,5,6,7,8))
     print("Initial State")
     display(eightPuzzle.initial)
 
     startTime = time.time()
     solved1, nodesRemoved1 = astar_search(eightPuzzle)
-    printResult(solved1, nodesRemoved1, time.time() - startTime)
+    print_result(solved1, nodesRemoved1, time.time() - startTime)
 
     startTime = time.time()
     solved2, nodesRemoved2 = astar_search(eightPuzzle, eightPuzzle.manhattan_heuristic)
-    printResult(solved2, nodesRemoved2, time.time() - startTime)
+    print_result(solved2, nodesRemoved2, time.time() - startTime)
 
     startTime = time.time()
     solved3, nodesRemoved3 = astar_search(eightPuzzle, eightPuzzle.maximum_heuristic)
-    printResult(solved3, nodesRemoved3, time.time() - startTime)
+    print_result(solved3, nodesRemoved3, time.time() - startTime)
 
 def astar_search(problem, h=None, display=False):
     """A* search is best-first graph search with f(n) = g(n)+h(n).
