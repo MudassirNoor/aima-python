@@ -58,9 +58,14 @@ class YPuzzle(Problem):
         row = int(index_blank_square / 4)
         column = index_blank_square % 4
 
+        atChimney = index_blank_square == 1
+        if atChimney:
+            possible_actions = ['DOWN']
+            return possible_actions
+
         if column == 0:
             possible_actions.remove('LEFT')
-        if row == 0:
+        if row == 0 or (row == 1 and column != 1):
             possible_actions.remove('UP')
         if column == 3:
             possible_actions.remove('RIGHT')
