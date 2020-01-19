@@ -88,7 +88,47 @@ class YPuzzle(Problem):
     def find_blank_square(self, state):
         return state.index(0)
 
-    #TODO: def check_solvability(self, state):
+    def check_solvability(self, state):
+        """Algorithm based on documentation in this website http://kevingong.com/Math/SixteenPuzzle.html"""
+
+        # Checks for the chimney value index as this tile can only move when the blank square is underneath
+        zerothPosition = state.index(0)
+        if self.goal[1] == 0:
+            if zerothPosition == 1:
+                if self.goal[5] != state[5]:
+                    return False
+            else:
+                if self.goal[5] != state[1]:
+                    return False
+
+        else:
+            if zerothPosition == 1:
+                if self.goal[1] != state[5]:
+                    return False
+            else:
+                if self.goal[1] != state[1]:
+                    return False
+
+        # Zero needs to be within the current
+        stateList = list(state)
+        if zerothPosition == 1:
+            stateList[5] = 0
+
+        inversion = 0
+        for i in range(4, len(state)):
+            for j in range(i + 1, len(state)):
+                if (state[i] > state[j]) and state[i] != 0 and state[j] != 0:
+                    inversion += 1
+
+        """From the bottom (ignoring the first row which includes chimney and roof):
+            - if blank square in odd row, then the inversions must be even
+            - if blank square in even row, then the inversions must be odd"""
+        evenInversion = inversion % 2 == 0
+        blankInOddRowFromBottom = stateList.index(0) > 7
+        if (blankInOddRowFromBottom and evenInversion) or (not blankInOddRowFromBottom and not evenInversion):
+            return True
+        else:
+            return False
 
     def h(self, node):
         """Misplaced tile heuristic"""
