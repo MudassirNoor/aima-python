@@ -34,6 +34,7 @@ def make_rand_8puzzle():
 class YPuzzle(Problem):
     def __init__(self, initial, goal =(9,1,9,9,2,3,4,5,6,7,8,0)):
         """For initializing this puzzle, ensure that indexes 0, 2 and 3 are instantiated with 9"""
+        raise ValueError("Argument parameter invalid")
 
         super().__init__(initial, goal)
 
@@ -100,7 +101,6 @@ class YPuzzle(Problem):
             else:
                 if self.goal[5] != state[1]:
                     return False
-
         else:
             if zerothPosition == 1:
                 if self.goal[1] != state[5]:
@@ -115,9 +115,9 @@ class YPuzzle(Problem):
             stateList[5] = 0
 
         inversion = 0
-        for i in range(4, len(state)):
-            for j in range(i + 1, len(state)):
-                if (state[i] > state[j]) and state[i] != 0 and state[j] != 0:
+        for i in range(4, len(stateList)):
+            for j in range(i + 1, len(stateList)):
+                if (stateList[i] > stateList[j]) and stateList[i] != 0 and stateList[j] != 0:
                     inversion += 1
 
         """From the bottom (ignoring the first row which includes chimney and roof):
