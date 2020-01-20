@@ -16,25 +16,19 @@ def display(state):
 
 def make_rand_8puzzle():
     solvable = False
-    while (not solvable):
-        eightPuzzleList = []
-        for i in range(9):
-            eightPuzzleList.append(i)
+    eightPuzzleList = [i for i in range(9)]
 
+    while (not solvable):
         random.shuffle(eightPuzzleList)
-        eightPuzzleTuple = tuple(eightPuzzleList)
-        eightPuzzle = EightPuzzle(eightPuzzleTuple)
-        solvable = eightPuzzle.check_solvability(eightPuzzleTuple)
+        eightPuzzle = EightPuzzle(tuple(eightPuzzleList))
+        solvable = eightPuzzle.check_solvability(eightPuzzle.initial)
 
         if solvable:
             return eightPuzzle
 
-        del eightPuzzleTuple, eightPuzzleList, eightPuzzle
-
 class YPuzzle(Problem):
     def __init__(self, initial, goal =(9,1,9,9,2,3,4,5,6,7,8,0)):
         """For initializing this puzzle, ensure that indexes 0, 2 and 3 are instantiated with 9"""
-        raise ValueError("Argument parameter invalid")
 
         super().__init__(initial, goal)
 
@@ -46,7 +40,7 @@ class YPuzzle(Problem):
             if i != 0 and i % 4 == 0:
                 print()
             if listRepresentation[i] == 9:
-                print(" ", end = '')
+                print("  ", end = '')
             else:
                 print(str(listRepresentation[i]) + ' ', end = '')
 
@@ -204,15 +198,30 @@ def calculate_manhattanDistance(nodeIndex, goalIndex):
 
     return abs(xFinal - xInitial) + abs (yFinal - yInitial)
 
+"""This helper function is used to generate a random Y puzzle"""
+def make_rand_YPuzzle():
+    solvable = False
+    numbers = [i for i in range(9)]
+    ypuzzleList = [9] * 12
+    while not solvable:
+        random.shuffle(numbers)
+        ypuzzleList[1] = numbers[0]
+        index = 1
+        for i in range(4, 12):
+            ypuzzleList[i] = numbers[index]
+            index += 1
+
+        ypuzzle = YPuzzle(tuple(ypuzzleList))
+        solvable = ypuzzle.check_solvability(ypuzzle.initial)
+        if solvable:
+            return ypuzzle
+
 def main():
     run_EightPuzzle()
-    # run_HousePuzzle()
-
+    run_HousePuzzle()
 
 def run_HousePuzzle():
-    # ypuzzle = YPuzzle((9,1,9,9,2,0,4,5,6,3,7,8))
-    # ypuzzle = YPuzzle((9,0,9,9,2,1,8,4,6,3,7,5))
-    ypuzzle = YPuzzle(())
+    ypuzzle = make_rand_YPuzzle()
     print("Initial State")
     ypuzzle.display(ypuzzle.initial)
 
@@ -224,21 +233,21 @@ def run_HousePuzzle():
     print("Length of solution: ", len(solved1.solution()))
     print("Time elapsed: ", elapsedTime)
 
-    # startTime = time.time()
-    # solved2, nodesRemoved2 = astar_search(ypuzzle, ypuzzle.manhattan_heuristic)
-    # elapsedTime = time.time() - startTime
-    # ypuzzle.display(solved2.state)
-    # print("Nodes removed: ", nodesRemoved2)
-    # print("Length of solution: ", len(solved2.solution()))
-    # print("Time elapsed: ", elapsedTime)
-    #
-    # startTime = time.time()
-    # solved3, nodesRemoved3 = astar_search(ypuzzle, ypuzzle.maximum_heuristic)
-    # elapsedTime = time.time() - startTime
-    # ypuzzle.display(solved3.state)
-    # print("Nodes removed: ", nodesRemoved3)
-    # print("Length of solution: ", len(solved3.solution()))
-    # print("Time elapsed: ", elapsedTime)
+    startTime = time.time()
+    solved2, nodesRemoved2 = astar_search(ypuzzle, ypuzzle.manhattan_heuristic)
+    elapsedTime = time.time() - startTime
+    ypuzzle.display(solved2.state)
+    print("Nodes removed: ", nodesRemoved2)
+    print("Length of solution: ", len(solved2.solution()))
+    print("Time elapsed: ", elapsedTime)
+
+    startTime = time.time()
+    solved3, nodesRemoved3 = astar_search(ypuzzle, ypuzzle.maximum_heuristic)
+    elapsedTime = time.time() - startTime
+    ypuzzle.display(solved3.state)
+    print("Nodes removed: ", nodesRemoved3)
+    print("Length of solution: ", len(solved3.solution()))
+    print("Time elapsed: ", elapsedTime)
 
     return 0
 
@@ -248,7 +257,7 @@ def run_EightPuzzle():
     EightPuzzle.manhattan_heuristic = manhattan_heuristic
     EightPuzzle.maximum_heuristic = maximum_heuristic
 
-    eightPuzzle = EightPuzzle((7,2,4,5,0,6,8,3,1), (0,1,2,3,4,5,6,7,8))
+    eightPuzzle = make_rand_8puzzle()
     print("Initial State")
     display(eightPuzzle.initial)
 
@@ -271,7 +280,7 @@ def astar_search(problem, h=None, display=False):
     h = memoize(h or problem.h, 'h')
     return best_first_graph_search(problem, lambda n: n.path_cost + h(n), display)
 
-# Modified the following code to return an additional value
+# Modified the following code to return an additional value:- number of nodes removed from frontier
 def best_first_graph_search(problem, f, display=False):
     """Search the nodes with the lowest f scores first.
     You specify the function f(node) that you want to minimize; for example,
