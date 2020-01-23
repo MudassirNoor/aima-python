@@ -26,6 +26,7 @@ def make_rand_8puzzle():
         if solvable:
             return eightPuzzle
 
+"""For the House Puzzle, all indexes in the first row with the exception of the chimney is instantiated with 9"""
 class YPuzzle(Problem):
     def __init__(self, initial, goal =(9,1,9,9,2,3,4,5,6,7,8,0)):
         """For initializing this puzzle, ensure that indexes 0, 2 and 3 are instantiated with 9"""
@@ -164,11 +165,10 @@ class YPuzzle(Problem):
     - manhattan_heuristic
     - calculate_manhattanDistance"""
 
-def print_result(node, nodesRemoved, elapsedTime):
-    print("Final State")
-    display(node.state)
+def print_result(heuristic, lengthOfSolution, nodesRemoved, elapsedTime):
+    print(heuristic)
     print("Nodes removed: ", nodesRemoved)
-    print("Length of solution: ", len(node.solution()))
+    print("Length of solution: ", lengthOfSolution)
     print("Time elapsed: ", elapsedTime)
 
 def maximum_heuristic(self, node):
@@ -220,58 +220,57 @@ def main():
     run_EightPuzzle()
     run_HousePuzzle()
 
-def run_HousePuzzle():
-    ypuzzle = make_rand_YPuzzle()
-    print("Initial State")
-    ypuzzle.display(ypuzzle.initial)
-
-    startTime = time.time()
-    solved1, nodesRemoved1 = astar_search(ypuzzle)
-    elapsedTime = time.time() - startTime
-    ypuzzle.display(solved1.state)
-    print("Nodes removed: ", nodesRemoved1)
-    print("Length of solution: ", len(solved1.solution()))
-    print("Time elapsed: ", elapsedTime)
-
-    startTime = time.time()
-    solved2, nodesRemoved2 = astar_search(ypuzzle, ypuzzle.manhattan_heuristic)
-    elapsedTime = time.time() - startTime
-    ypuzzle.display(solved2.state)
-    print("Nodes removed: ", nodesRemoved2)
-    print("Length of solution: ", len(solved2.solution()))
-    print("Time elapsed: ", elapsedTime)
-
-    startTime = time.time()
-    solved3, nodesRemoved3 = astar_search(ypuzzle, ypuzzle.maximum_heuristic)
-    elapsedTime = time.time() - startTime
-    ypuzzle.display(solved3.state)
-    print("Nodes removed: ", nodesRemoved3)
-    print("Length of solution: ", len(solved3.solution()))
-    print("Time elapsed: ", elapsedTime)
-
     return 0
+
+def run_HousePuzzle():
+    for i in range(12):
+        ypuzzle = make_rand_YPuzzle()
+        print("Initial State")
+        ypuzzle.display(ypuzzle.initial)
+        print ("Goal State")
+        ypuzzle.display(ypuzzle.goal)
+
+        startTime = time.time()
+        solution, misplacedTilesNodes = astar_search(ypuzzle)
+        elapsedTime1 = time.time() - startTime
+        print_result("Misplaced Tile Heuristic", len(solution.solution()), misplacedTilesNodes, elapsedTime1)
+
+        startTime = time.time()
+        solution, manhattanDistanceNodes = astar_search(ypuzzle, ypuzzle.manhattan_heuristic)
+        elapsedTime2 = time.time() - startTime
+        print_result("Manhattan Distance Heuristic", len(solution.solution()), manhattanDistanceNodes, elapsedTime2)
+
+        startTime = time.time()
+        solution, maximumHeuristicNodes = astar_search(ypuzzle, ypuzzle.maximum_heuristic)
+        elapsedTime3 = time.time() - startTime
+        print_result("Maximum Heuristic", len(solution.solution()), maximumHeuristicNodes, elapsedTime3)
 
 def run_EightPuzzle():
     # Monkey Patching
-    # Well aware it is not a good practice, but within the current scope it is fine to use
     EightPuzzle.manhattan_heuristic = manhattan_heuristic
     EightPuzzle.maximum_heuristic = maximum_heuristic
 
-    eightPuzzle = make_rand_8puzzle()
-    print("Initial State")
-    display(eightPuzzle.initial)
+    for i in range(12):
+        eightPuzzle = make_rand_8puzzle()
+        print("Initial State")
+        display(eightPuzzle.initial)
+        print ("Goal State")
+        display(eightPuzzle.goal)
 
-    startTime = time.time()
-    solved1, nodesRemoved1 = astar_search(eightPuzzle)
-    print_result(solved1, nodesRemoved1, time.time() - startTime)
+        startTime = time.time()
+        solution, misplacedTilesNodes = astar_search(eightPuzzle)
+        elapsedTime1 = time.time() - startTime
+        print_result("Misplaced Tile Heuristic", len(solution.solution()), misplacedTilesNodes, elapsedTime1)
 
-    startTime = time.time()
-    solved2, nodesRemoved2 = astar_search(eightPuzzle, eightPuzzle.manhattan_heuristic)
-    print_result(solved2, nodesRemoved2, time.time() - startTime)
+        startTime = time.time()
+        solution, manhattanDistanceNodes = astar_search(eightPuzzle, eightPuzzle.manhattan_heuristic)
+        elapsedTime2 = time.time() - startTime
+        print_result("Manhattan Distance Heuristic", len(solution.solution()), manhattanDistanceNodes, elapsedTime2)
 
-    startTime = time.time()
-    solved3, nodesRemoved3 = astar_search(eightPuzzle, eightPuzzle.maximum_heuristic)
-    print_result(solved3, nodesRemoved3, time.time() - startTime)
+        startTime = time.time()
+        solution, maximumHeuristicNodes = astar_search(eightPuzzle, eightPuzzle.maximum_heuristic)
+        elapsedTime3 = time.time() - startTime
+        print_result("Maximum Heuristic", len(solution.solution()), maximumHeuristicNodes, elapsedTime3)
 
 def astar_search(problem, h=None, display=False):
     """A* search is best-first graph search with f(n) = g(n)+h(n).
