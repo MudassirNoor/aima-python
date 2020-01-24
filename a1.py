@@ -183,9 +183,8 @@ def manhattan_heuristic(self, node):
     manhattanDistance = 0
 
     for i in range(len(self.goal)):
-        if node.state[i] != 0:
-            goalPosition = self.goal.index(node.state[i])
-            manhattanDistance += calculate_manhattanDistance(i, goalPosition)
+        goalPosition = self.goal.index(node.state[i])
+        manhattanDistance += calculate_manhattanDistance(i, goalPosition)
 
     return manhattanDistance
 
